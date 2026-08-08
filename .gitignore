@@ -1,0 +1,35 @@
+# Build / install trees
+/build/
+/install/
+**/CMakeCache.txt
+**/CMakeFiles/
+**/Makefile
+**/cmake_install.cmake
+**/compile_commands.json
+
+# Local / editor / debug
+*.user
+*.autosave
+*~
+.vscode/
+.idea/
+__pycache__/
+*.pyc
+*.pyo
+*.so
+*.o
+*.a
+*.egg-info/
+.cache/
+
+# Debug session logs
+**/debug-*.log
+/tmp/debug-*.log
+
+# Generated GRC Python (keep .grc examples)
+TEST/
+*.py.bak
+
+# OS junk
+.DS_Store
+Thumbs.db

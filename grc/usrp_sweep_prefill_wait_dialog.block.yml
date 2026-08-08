@@ -1,0 +1,29 @@
+id: usrp_sweep_prefill_wait_dialog
+label: USRP Sweep Prefill Wait Dialog
+category: '[usrp_sweep]'
+
+templates:
+  imports: from gnuradio import usrp_sweep
+  make: usrp_sweep.prefill_wait_dialog(self, ${title})
+
+parameters:
+- id: title
+  label: Dialog Title
+  dtype: string
+  default: USRP Sweep
+
+inputs:
+- domain: message
+  id: status
+
+documentation: |-
+  Shows a progress dialog while USRP Sweep fills its circular buffer
+  (prefill) before spectrum display starts.
+
+  Wiring:
+    USRP Sweep (Panorama): status -> this block
+
+  Text:
+    "Please wait — filling spectrum buffers"
+
+file_format: 1

@@ -1,0 +1,35 @@
+id: usrp_sweep_set_time_sink_nsamps
+label: USRP Sweep Set Time Sink Nsamps
+category: '[usrp_sweep]'
+
+templates:
+  imports: from gnuradio import usrp_sweep
+  # Pass top-block self + sink attribute name. Sink need not exist yet at make().
+  make: usrp_sweep.set_time_sink_nsamps(self, ${time_sink})
+
+parameters:
+- id: time_sink
+  label: Time Sink Block ID
+  dtype: string
+  default: qtgui_time_sink_x_0
+
+inputs:
+- domain: message
+  id: inpair
+
+documentation: |-
+  Calls QT GUI Time Sink set_nsamps(N) from USRP Sweep num_points messages.
+
+  Unlike blocks.msg_pair_to_var(getattr(...).set_nsamps), this block resolves
+  the sink when the first message arrives, so GRC construction order is safe
+  (usrp_* blocks are often generated before qtgui_*).
+
+  Wiring:
+    USRP Sweep (Panorama): out        -> QT GUI Time Sink
+    USRP Sweep (Panorama): num_points -> this block
+  Time Sink Block ID = sink ID without quotes, e.g. qtgui_time_sink_x_0
+
+  Time Sink: Trigger Mode=Tag, Tag Key=sweep_start.
+  Initial Number of Points can be 1024; it updates on the first message.
+
+file_format: 1

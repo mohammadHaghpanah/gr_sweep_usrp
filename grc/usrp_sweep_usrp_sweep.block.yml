@@ -1,0 +1,174 @@
+id: usrp_sweep_usrp_sweep
+label: USRP Sweep (Panorama)
+category: '[usrp_sweep]'
+
+templates:
+  imports: from gnuradio import usrp_sweep
+  make: "usrp_sweep.usrp_sweep(${args}, ${rx_subdev}, ${antenna}, ${wire}, ${sample_rate}, ${start_fc}, ${stop_fc}, ${norm_gain}, ${bandwidth}, ${fft_size}, ${overlap}, ${lock_time}, ${lo_setup_time}, ${ref}, ${master_clock}, ${output_db}, ${buffer_capacity}, ${average_alpha})"
+  callbacks:
+  - self.set_args(${args})
+  - self.set_rx_subdev(${rx_subdev})
+  - self.set_antenna(${antenna})
+  - self.set_sample_rate(${sample_rate})
+  - self.set_start_fc(${start_fc})
+  - self.set_stop_fc(${stop_fc})
+  - self.set_norm_gain(${norm_gain})
+  - self.set_bandwidth(${bandwidth})
+  - self.set_fft_size(${fft_size})
+  - self.set_overlap(${overlap})
+  - self.set_lock_time(${lock_time})
+  - self.set_output_db(${output_db})
+  - self.set_average_alpha(${average_alpha})
+
+parameters:
+- id: args
+  label: Device Args
+  dtype: string
+  default: '""'
+- id: rx_subdev
+  label: RX Subdev
+  dtype: string
+  default: '""'
+- id: antenna
+  label: Antenna
+  dtype: enum
+  default: '"RX2"'
+  options: ['"RX2"', '"TX/RX"']
+  option_labels: [RX2, TX/RX]
+- id: wire
+  label: Wire Format
+  dtype: string
+  default: '""'
+- id: sample_rate
+  label: Sample Rate (Hz)
+  dtype: real
+  default: 10e6
+- id: start_fc
+  label: Start Freq (Hz)
+  dtype: real
+  default: 100e6
+- id: stop_fc
+  label: Stop Freq (Hz)
+  dtype: real
+  default: 200e6
+- id: norm_gain
+  label: Normalized Gain (0..1)
+  dtype: real
+  default: '0.5'
+- id: bandwidth
+  label: Bandwidth (Hz, 0=auto)
+  dtype: real
+  default: '0'
+- id: fft_size
+  label: FFT Size
+  dtype: int
+  default: '2048'
+- id: overlap
+  label: Overlap
+  dtype: enum
+  default: '0.25'
+  options: ['0', '0.25', '0.5', '0.75', '1']
+  option_labels: ['0', '0.25', '0.5', '0.75', '1']
+- id: lock_time
+  label: Lock / Settle Time (s)
+  dtype: real
+  default: '0.01'
+- id: lo_setup_time
+  label: LO Setup Timeout (s)
+  dtype: real
+  default: '0.5'
+- id: ref
+  label: Clock Source
+  dtype: string
+  default: '""'
+- id: master_clock
+  label: Master Clock (Hz, -1=default)
+  dtype: real
+  default: '-1'
+- id: output_db
+  label: Output dB
+  dtype: bool
+  default: 'True'
+- id: buffer_capacity
+  label: Circular Buffer Capacity
+  dtype: int
+  default: '8'
+- id: average_alpha
+  label: Average Alpha (EMA)
+  dtype: enum
+  default: '1.0'
+  options: ['1.0', '0.2', '0.1', '0.05', '0.0025']
+  option_labels: [NO_AVG, LOW_AVG, MEDIUM_AVG, HIGH_AVG, ULTRA_AVG]
+
+outputs:
+- label: out
+  domain: stream
+  dtype: float
+
+- label: num_points_int
+  domain: stream
+  dtype: int
+  optional: true
+
+- label: num_points
+  domain: message
+  optional: true
+
+- label: meta
+  domain: message
+  optional: true
+
+- label: status
+  domain: message
+  optional: true
+
+documentation: |-
+  USRP panorama / frequency-sweep spectrum source.
+
+  Ports Qt Panorama_Params + UHD_Timed_TxRx::panorama + Panorama_FFT +
+  overlap stitch into a GNU Radio source (same display contract as gr-bb60c).
+
+  Outputs:
+    - out (float): stitched sweep bins (dB if Output dB=True)
+    - num_points_int (optional int stream): bins/sweep
+    - num_points (message): (num_points . N) every sweep — use with
+      "USRP Sweep Set Time Sink Nsamps" to update QT GUI Time Sink
+    - meta (message): sweep_size, bin_size, start_freq, num_slots
+    - status (message): prefill progress {phase, filled, target} — use with
+      "USRP Sweep Prefill Wait Dialog"
+
+  Correct Time Sink display:
+    out -> QT GUI Time Sink (Trigger=Tag, Tag Key=sweep_start)
+    num_points -> USRP Sweep Set Time Sink Nsamps
+      (Time Sink Block ID = your sink id, e.g. qtgui_time_sink_x_0)
+    status -> USRP Sweep Prefill Wait Dialog
+
+  Initial Number of Points can be 1024; set_nsamps(N) runs on first message.
+  N = compute_sweep_size(start_fc, stop_fc, sample_rate, fft_size).
+
+  Average Alpha (EMA) — Qt pano_FFT_average_alpha on linear |FFT|:
+    avg = avg*(1-α) + |FFT|*α   (then stitch; optional 10*log10)
+    Combo: NO_AVG=1.0, LOW=0.2, MED=0.1, HIGH=0.05, ULTRA=0.0025
+    Changing α resets per-slot averages.
+
+  Antenna combo: RX2 | TX/RX (case-insensitive match on hardware).
+  Overlap combo: 0 | 0.25 | 0.5 | 0.75 | 1  (1 is clamped to 0.999 internally).
+
+  Performance (wide spans e.g. 100–1000 MHz):
+    Circular Buffer Capacity is clamped to max 32 (values like 1e6 break prefill).
+    On start, work() waits until the buffer is COMPLETELY full, then displays.
+    Each update shows the newest sweep only (stale backlog is dropped).
+    After set_rx_rate, the block adopts the ACTUAL UHD rate (important for N200).
+    Every LO hop waits for lo_locked + Lock/Settle Time (USB and Ethernet).
+    N200/1GbE: keep Sample Rate ≤ ~25e6 (prefer 25e6 / 12.5e6; avoid 40e6).
+    Antenna names are case-insensitive (Rx2 → RX2).
+    For speed on B200: Sample Rate high (20–56e6), Overlap=0, FFT Size 1024.
+
+  Note: plain Variable / Message Pair to Var cannot update Time Sink
+  Num Points (GRC Time Sink has no set_nsamps callback).
+
+  Geometry helpers (Python):
+    usrp_sweep.compute_sweep_size(start, stop, rate, fft_size)
+    usrp_sweep.compute_num_slots(start, stop, rate, overlap)
+
+file_format: 1
