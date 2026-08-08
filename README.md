@@ -16,20 +16,31 @@ change.
 
 <p align="center"><em>Real-time stitched panorama (100 MHz → 1 GHz) on QT GUI Time Sink</em></p>
 
+## Demo video (~30 s)
+
+Short live capture of the real-time sweep UI (prefill wait → panorama updates):
+
+https://github.com/mohammadHaghpanah/gr_sweep_usrp/blob/main/docs/videos/realtime_demo.mp4
+
+<video src="docs/videos/realtime_demo.mp4" controls width="720"></video>
+
+<p align="center"><em>File in-repo: <code>docs/videos/realtime_demo.mp4</code> (~2 MB)</em></p>
+
 ---
 
 ## Table of contents
 
-1. [Requirements & installation](#requirements--installation)
-2. [Quick start (real-time)](#quick-start-real-time)
-3. [Supported USRP hardware](#supported-usrp-hardware)
-4. [How the real-time pipeline works](#how-the-real-time-pipeline-works)
-5. [Overlap — what it is and how it is applied](#overlap--what-it-is-and-how-it-is-applied)
-6. [Averaging (EMA) algorithm](#averaging-ema-algorithm)
-7. [GRC parameters](#grc-parameters)
-8. [Build from source](#build-from-source)
-9. [Repository layout](#repository-layout)
-10. [License](#license)
+1. [Demo video (~30 s)](#demo-video-30-s)
+2. [Requirements & installation](#requirements--installation)
+3. [Quick start (real-time)](#quick-start-real-time)
+4. [Supported USRP hardware](#supported-usrp-hardware)
+5. [How the real-time pipeline works](#how-the-real-time-pipeline-works)
+6. [Overlap — what it is and how it is applied](#overlap--what-it-is-and-how-it-is-applied)
+7. [Averaging (EMA) algorithm](#averaging-ema-algorithm)
+8. [GRC parameters](#grc-parameters)
+9. [Build from source](#build-from-source)
+10. [Repository layout](#repository-layout)
+11. [License](#license)
 
 ---
 
@@ -490,6 +501,7 @@ gr_sweep_usrp/
 ├── python/usrp_sweep/             bindings + helper blocks
 ├── examples/flowgraphs/           demo .grc / .py
 ├── docs/images/                   README screenshots
+├── docs/videos/realtime_demo.mp4  ~30 s live demo
 └── tools/                         optional debug utilities
 ```
 
